@@ -1,11 +1,12 @@
+import { Link } from 'expo-router';
 import React from 'react';
 import {
-    Image,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const LoginScreen = () => {
@@ -27,9 +28,11 @@ const LoginScreen = () => {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Entrar</Text>
-      </TouchableOpacity>
+      <Link href="/identification" asChild>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>Entrar</Text>
+          </TouchableOpacity>
+      </Link>
     </View>
   );
 };
