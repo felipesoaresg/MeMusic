@@ -2,26 +2,24 @@ import { Link } from 'expo-router';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const identification = () => {
+const Identification = () => {
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <Image
         source={require('../assets/images/logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />
 
-      {/* Título */}
       <Text style={styles.title}>Quem é você?</Text>
 
-      <Link href="/identification" asChild>
+      <Link href="/client" asChild>
           <TouchableOpacity style={styles.buttonCliente}>
             <Text style={styles.buttonText}>Cliente</Text>
           </TouchableOpacity>
       </Link>
 
-        <Link href="/identification" asChild>
+        <Link href="/musican" asChild>
           <TouchableOpacity style={styles.buttonMusico}>
             <Text style={styles.buttonText}>Músico</Text>
           </TouchableOpacity>
@@ -30,7 +28,7 @@ const identification = () => {
   );
 };
 
-export default identification;
+export default Identification;
 
 const styles = StyleSheet.create({
   container: {
