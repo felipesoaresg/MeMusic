@@ -1,6 +1,8 @@
-import { Link } from 'expo-router';
-import React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import {
+  Alert,
   Image,
   StyleSheet,
   Text,
@@ -9,7 +11,25 @@ import {
   View,
 } from 'react-native';
 
-const LoginScreen = () => {
+const Login = () => {
+  const [nome, setNome] = useState('');
+  const [senha, setSenha] = useState('');
+  const router = useRouter();
+
+  const handleLogin = async () => {
+    if (!nome.trim() || !senha.trim()) {
+      Alert.alert('Campos obrigatórios', 'Preencha o login e a senha para continuar.');
+      return;
+    }
+
+    try {
+      await AsyncStorage.setItem('userName', nome);
+      router.push('/identification');
+    } catch (error) {
+      console.error('Erro ao salvar nome:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -20,24 +40,26 @@ const LoginScreen = () => {
         style={styles.input}
         placeholder="Login:"
         placeholderTextColor="#aaa"
+        value={nome}
+        onChangeText={setNome}
       />
       <TextInput
         style={styles.input}
         placeholder="Senha:"
         placeholderTextColor="#aaa"
         secureTextEntry
+        value={senha}
+        onChangeText={setSenha}
       />
 
-      <Link href="/identification" asChild>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Entrar</Text>
-          </TouchableOpacity>
-      </Link>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Entrar</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
-export default LoginScreen;
+export default Login;
 
 const styles = StyleSheet.create({
   container: {
