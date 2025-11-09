@@ -1,14 +1,15 @@
 import BackButton from '@/components/Backbutton';
-import { FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 type Pedido = {
   id: string;
   musica: string;
   cantor: string;
   genero: string;
+  capa?: string;
+  ano?: string;
   tocada?: boolean;
 };
 
@@ -38,9 +39,9 @@ const MusicianQueue = () => {
   };
 
   const pedidosFiltrados = pedidos.filter(p =>
-    p.musica.toLowerCase().includes(busca.toLowerCase()) ||
-    p.cantor.toLowerCase().includes(busca.toLowerCase()) ||
-    p.genero.toLowerCase().includes(busca.toLowerCase())
+    (p.musica?.toLowerCase() || '').includes(busca.toLowerCase()) ||
+    (p.cantor?.toLowerCase() || '').includes(busca.toLowerCase()) ||
+    (p.genero?.toLowerCase() || '').includes(busca.toLowerCase())
   );
 
   return (
@@ -60,7 +61,11 @@ const MusicianQueue = () => {
         {pedidosFiltrados.length > 0 ? (
           pedidosFiltrados.map(item => (
             <View key={item.id} style={[styles.item, item.tocada && styles.itemTocada]}>
-              <FontAwesome name="music" size={24} color="#00FFFF" style={styles.icon} />
+              {item.capa ? (
+                <Image source={{ uri: item.capa }} style={styles.icon} />
+              ) : (
+                <View style={[styles.icon, { backgroundColor: '#333' }]} />
+              )}
               <View style={styles.info}>
                 <Text style={styles.musica}>{item.musica}</Text>
                 <Text style={styles.cantor}>{item.cantor} • {item.genero}</Text>
@@ -125,6 +130,9 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   icon: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
     marginRight: 16,
     marginTop: 6,
   },
