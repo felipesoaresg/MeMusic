@@ -27,6 +27,12 @@
 ## Descrição do Projeto
 M&Music é um aplicativo móvel que conecta clientes e músicos em bares, permitindo que os clientes façam pedidos de músicas diretamente pelo app, enquanto os músicos visualizam esses pedidos em tempo real, organizam seu repertório e marcam quais músicas já tocaram. Com interfaces personalizadas, o app oferece uma experiência interativa, prática e visualmente consistente.
 
+## Vídeo apresentando projeto 
+<a href='https://youtu.be/i62zrIjEGm8'>M&Music Apresentação</a>
+
+## Link da API do Spotify
+<a href='https://developer.spotify.com/'>API</a>
+
 ## Estrutura do Projeto
 Aqui estão as seções principais da nossa apresentação. As imagens abaixo representam telas e fluxos da aplicação.
 
