@@ -1,29 +1,40 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
 import {
-  Alert,
   Image,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  nome: z.string().min(1, 'Login obrigatório'),
+  senha: z.string().min(1, 'Senha obrigatória'),
+});
+
+type LoginData = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const [nome, setNome] = useState('');
-  const [senha, setSenha] = useState('');
   const router = useRouter();
 
-  const handleLogin = async () => {
-    if (!nome.trim() || !senha.trim()) {
-      Alert.alert('Campos obrigatórios', 'Preencha o login e a senha para continuar.');
-      return;
-    }
+  const {
+    register,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginData>({
+    resolver: zodResolver(loginSchema),
+  });
 
+  const handleLogin = async (data: LoginData) => {
     try {
-      await AsyncStorage.setItem('userName', nome);
+      await AsyncStorage.setItem('userName', data.nome);
       router.push('/identification');
     } catch (error) {
       console.error('Erro ao salvar nome:', error);
@@ -33,26 +44,29 @@ const Login = () => {
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
-        <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode="contain"/>
+        <Image source={require('../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
       </View>
 
       <TextInput
         style={styles.input}
         placeholder="Login:"
         placeholderTextColor="#aaa"
-        value={nome}
-        onChangeText={setNome}
+        onChangeText={text => setValue('nome', text)}
+        {...register('nome')}
       />
+      {errors.nome && <Text style={styles.error}>{errors.nome.message}</Text>}
+
       <TextInput
         style={styles.input}
         placeholder="Senha:"
         placeholderTextColor="#aaa"
         secureTextEntry
-        value={senha}
-        onChangeText={setSenha}
+        onChangeText={text => setValue('senha', text)}
+        {...register('senha')}
       />
+      {errors.senha && <Text style={styles.error}>{errors.senha.message}</Text>}
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+      <TouchableOpacity style={styles.button} onPress={handleSubmit(handleLogin)}>
         <Text style={styles.buttonText}>Entrar</Text>
       </TouchableOpacity>
     </View>
@@ -101,5 +115,11 @@ const styles = StyleSheet.create({
     color: '#0d0d0d',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  error: {
+    color: '#FF6B6B',
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+    marginTop: -10,
   },
 });
