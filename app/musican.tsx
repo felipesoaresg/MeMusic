@@ -1,19 +1,47 @@
+import { searchTrack } from '@/api/spotifySearch';
 import HeaderBar from '@/components/HeaderBar';
-import { Feather, FontAwesome } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const Musician = () => {
   const [userName, setUserName] = useState('');
+  const [musicaAtual, setMusicaAtual] = useState<{
+    name: string;
+    artist: string;
+    albumImage: string;
+  }>({
+    name: '',
+    artist: '',
+    albumImage: '',
+  });
 
   useEffect(() => {
     const loadUserName = async () => {
       const storedName = await AsyncStorage.getItem('userName');
       if (storedName) setUserName(storedName);
     };
+
+    const carregarMusicaAtual = async () => {
+      try {
+        const resultados = await searchTrack('Pink + White Frank Ocean');
+        if (resultados.length > 0) {
+          const musica = resultados[0];
+          setMusicaAtual({
+            name: musica.name,
+            artist: musica.artist,
+            albumImage: musica.albumImage,
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao buscar música atual:', error);
+      }
+    };
+
     loadUserName();
+    carregarMusicaAtual();
   }, []);
 
   return (
@@ -28,10 +56,12 @@ const Musician = () => {
         </View>
 
         <View style={styles.nowPlaying}>
-          <FontAwesome name="music" size={24} color="#FFB052" style={styles.musicIcon} />
+          {musicaAtual.albumImage ? (
+            <Image source={{ uri: musicaAtual.albumImage }} style={styles.albumImage} />
+          ) : null}
           <Text style={styles.nowPlayingLabel}>Tocando agora</Text>
-          <Text style={styles.songTitle}>Pink + White</Text>
-          <Text style={styles.artist}>Frank Ocean</Text>
+          <Text style={styles.songTitle}>{musicaAtual.name}</Text>
+          <Text style={styles.artist}>{musicaAtual.artist}</Text>
         </View>
 
         <Link href="/musicanQueue" asChild>
@@ -89,7 +119,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
-  musicIcon: {
+  albumImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
     marginBottom: 10,
   },
   nowPlayingLabel: {
