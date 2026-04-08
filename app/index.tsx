@@ -1,83 +1,34 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import React from 'react';
-import { useForm } from 'react-hook-form';
-import {
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
-} from 'react-native';
-import { z } from 'zod';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const loginSchema = z.object({
-  nome: z.string().min(1, 'Login obrigatório'),
-  senha: z.string().min(1, 'Senha obrigatória'),
-});
-
-type LoginData = z.infer<typeof loginSchema>;
-
-const Login = () => {
-  const router = useRouter();
-
-  const {
-    register,
-    setValue,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginData>({
-    resolver: zodResolver(loginSchema),
-  });
-
-  const handleLogin = async (data: LoginData) => {
-    try {
-      await AsyncStorage.setItem('userName', data.nome);
-      router.push('/identification');
-    } catch (error) {
-      console.error('Erro ao salvar nome:', error);
-    }
-  };
-
+const Identification = () => {
   return (
     <View style={styles.container}>
-      <View style={styles.logoContainer}>
-        <Image
-          source={require('../assets/images/logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Login:"
-        placeholderTextColor="#aaa"
-        onChangeText={text => setValue('nome', text)}
-        {...register('nome')}
+      <Image
+        source={require('../assets/images/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
       />
-      {errors.nome && <Text style={styles.error}>{errors.nome.message}</Text>}
 
-      <TextInput
-        style={styles.input}
-        placeholder="Senha:"
-        placeholderTextColor="#aaa"
-        secureTextEntry
-        onChangeText={text => setValue('senha', text)}
-        {...register('senha')}
-      />
-      {errors.senha && <Text style={styles.error}>{errors.senha.message}</Text>}
+      <Text style={styles.title}>Quem é você?</Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit(handleLogin)}>
-        <Text style={styles.buttonText}>Entrar</Text>
-      </TouchableOpacity>
+      <Link href="/clientLogin" asChild>
+          <TouchableOpacity style={styles.buttonCliente}>
+            <Text style={styles.buttonText}>Cliente</Text>
+          </TouchableOpacity>
+      </Link>
+
+        <Link href="/musicanLogin" asChild>
+          <TouchableOpacity style={styles.buttonMusico}>
+            <Text style={styles.buttonText}>Músico</Text>
+          </TouchableOpacity>
+        </Link>
     </View>
   );
 };
 
-export default Login;
+export default Identification;
 
 const styles = StyleSheet.create({
   container: {
@@ -85,29 +36,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#0d0d0d',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 30,
-  },
-  logoContainer: {
-    marginBottom: 30,
-    padding: 20,
+    paddingHorizontal: 20,
   },
   logo: {
     width: 400,
     height: 200,
+    marginBottom: 30,
   },
-  input: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 8,
-    borderColor: '#3D3778',
-    borderWidth: 2,
-    paddingHorizontal: 15,
-    color: '#fff',
-    marginBottom: 15,
+  title: {
+    fontSize: 18,
+    color: '#8c83d6ff',
+    fontWeight: 'bold',
+    marginBottom: 20,
+    alignSelf: 'flex-start', 
+    paddingLeft: 45,   
   },
-  button: {
-    width: '100%',
+  buttonCliente: {
+    width: '80%',
     height: 50,
     backgroundColor: '#3597A6',
     borderRadius: 8,
@@ -120,10 +65,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  error: {
-    color: '#FF6B6B',
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-    marginTop: -10,
+  buttonMusico: {
+    width: '80%',
+    height: 50,
+    backgroundColor: '#FFB052',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
   },
 });
