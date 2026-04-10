@@ -158,3 +158,32 @@ export async function criarPedidoCliente({
     throw error;
   }
 }
+
+async function parseResponse(response) {
+  const text = await response.text();
+
+  console.log('Status:', response.status);
+  console.log('Resposta:', text);
+
+  let data = {};
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { error: text };
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Erro na API');
+  }
+
+  return data;
+}
+
+export async function listarPedidosCliente(id_cliente) {
+  const response = await fetch(`${API_URL}/pedidos/cliente/${id_cliente}`, {
+    method: 'GET',
+  });
+
+  return await parseResponse(response);
+}
