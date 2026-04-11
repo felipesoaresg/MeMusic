@@ -1,4 +1,5 @@
 const API_URL = 'https://api-me-m.vercel.app';
+const APEX_API_URL = 'https://g85330368fb2b3b-memusicas.adb.sa-saopaulo-1.oraclecloudapps.com/ords/musicas_ws';
 
 // AUTENTICAÇÃO
 async function getAuthHeader(user) {
@@ -186,4 +187,33 @@ export async function listarPedidosCliente(id_cliente) {
   });
 
   return await parseResponse(response);
+}
+
+//APEX
+export async function validarPedidoNoApex(id_cliente) {
+  const response = await fetch(`${APEX_API_URL}/limite/check`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ id_cliente }),
+  });
+
+  const text = await response.text();
+  console.log('Status APEX:', response.status);
+  console.log('Resposta APEX:', text);
+
+  let data = {};
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { error: text };
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Erro ao validar pedido no APEX');
+  }
+
+  return data;
 }
