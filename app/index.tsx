@@ -19,7 +19,7 @@ const Identification = () => {
           </TouchableOpacity>
       </Link>
 
-        <Link href="/musicanLogin" asChild>
+        <Link href="/musicianLogin" asChild>
           <TouchableOpacity style={styles.buttonMusico}>
             <Text style={styles.buttonText}>Músico</Text>
           </TouchableOpacity>
