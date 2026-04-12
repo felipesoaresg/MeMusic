@@ -1,11 +1,15 @@
 import { searchTrack } from '@/api/spotifySearch';
 import BackButton from '@/components/Backbutton';
+import { criarPedidoCliente, validarPedidoNoApex } from '@/services/api';
+import type { ApexValidacaoResponse } from '@/types/apex';
+import type { CriarPedidoResponse } from '@/types/pedido';
 import { TrackInfo } from '@/types/trackInfo';
 import { zodResolver } from '@hookform/resolvers/zod';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -27,7 +31,11 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const Request = () => {
+  const { clientId } = useLocalSearchParams<{ clientId: string }>();
+  const id = Array.isArray(clientId) ? clientId[0] : clientId;
+
   const [sugestoes, setSugestoes] = useState<TrackInfo[]>([]);
+  const [enviando, setEnviando] = useState(false);
 
   const {
     register,
@@ -46,6 +54,7 @@ const Request = () => {
 
   const buscarSugestoes = async (texto: string) => {
     setValue('musica', texto);
+
     if (texto.length < 3) {
       setSugestoes([]);
       return;
@@ -62,39 +71,56 @@ const Request = () => {
 
   const enviarPedido = async (data: FormData) => {
     try {
-      const resultados = await searchTrack(data.musica);
+      setEnviando(true);
+
+      if (!id) {
+        Alert.alert('Erro', 'Cliente não identificado. Faça login novamente.');
+        return;
+      }
+
+      const validacao = await validarPedidoNoApex(
+        Number(id)
+      ) as ApexValidacaoResponse;
+
+      if (validacao.status === 'LIMITE_ATINGIDO') {
+        Alert.alert(
+          'Limite atingido',
+          'Você já atingiu o limite de 4 pedidos permitido.'
+        );
+        return;
+      }
+
+      const resultados = await searchTrack(`${data.musica} ${data.cantor}`);
 
       if (resultados.length === 0) {
-        Alert.alert('Nenhum resultado encontrado', 'Verifique o nome da música e tente novamente.');
+        Alert.alert(
+          'Nenhum resultado encontrado',
+          'Verifique o nome da música e tente novamente.'
+        );
         return;
       }
 
       const musicaEncontrada = resultados[0];
 
-      const novoPedido = {
-        id: Date.now().toString(),
-        musica: musicaEncontrada.name,
-        cantor: musicaEncontrada.artist,
+      const response = await criarPedidoCliente({
+        id_cliente: Number(id),
+        titulo: musicaEncontrada.name,
+        artista: musicaEncontrada.artist,
         genero: data.genero,
-        capa: musicaEncontrada.albumImage,
-        ano: musicaEncontrada.releaseYear,
-      };
-
-      const pedidosExistentes = await AsyncStorage.getItem('pedidos');
-      const pedidos = pedidosExistentes ? JSON.parse(pedidosExistentes) : [];
-      pedidos.push(novoPedido);
-      await AsyncStorage.setItem('pedidos', JSON.stringify(pedidos));
+      }) as CriarPedidoResponse;
 
       Alert.alert(
         'Pedido enviado',
-        `Música: ${novoPedido.musica}\nCantor: ${novoPedido.cantor}\nAno: ${novoPedido.ano}`
+        `Música: ${response.pedido.titulo}\nCantor: ${response.pedido.artista}`
       );
 
-      reset();
+      reset({ musica: '', cantor: '', genero: '' });
       setSugestoes([]);
-    } catch (error) {
-      console.error('Erro ao buscar música ou salvar pedido:', error);
-      Alert.alert('Erro', 'Não foi possível buscar a música ou salvar o pedido.');
+    } catch (error: any) {
+      console.error('Erro ao enviar pedido:', error);
+      Alert.alert('Erro', error?.message || 'Não foi possível enviar o pedido.');
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -147,7 +173,7 @@ const Request = () => {
           placeholder="Ex: Chitãozinho & Xororó"
           placeholderTextColor="#999"
           value={cantor}
-          onChangeText={text => setValue('cantor', text)}
+          onChangeText={(text) => setValue('cantor', text)}
           {...register('cantor')}
         />
         {errors.cantor && <Text style={styles.error}>{errors.cantor.message}</Text>}
@@ -158,13 +184,21 @@ const Request = () => {
           placeholder="Ex: Sertanejo"
           placeholderTextColor="#999"
           value={genero}
-          onChangeText={text => setValue('genero', text)}
+          onChangeText={(text) => setValue('genero', text)}
           {...register('genero')}
         />
         {errors.genero && <Text style={styles.error}>{errors.genero.message}</Text>}
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit(enviarPedido)}>
-          <Text style={styles.buttonText}>Enviar pedido</Text>
+        <TouchableOpacity
+          style={[styles.button, enviando && { opacity: 0.6 }]}
+          onPress={handleSubmit(enviarPedido)}
+          disabled={enviando}
+        >
+          {enviando ? (
+            <ActivityIndicator size="small" color="#0d0d0d" />
+          ) : (
+            <Text style={styles.buttonText}>Enviar pedido</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>
