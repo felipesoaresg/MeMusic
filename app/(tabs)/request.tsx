@@ -83,13 +83,14 @@ const Request = () => {
       ) as ApexValidacaoResponse;
 
       if (validacao.status === 'LIMITE_ATINGIDO') {
-        Alert.alert(
-          'Limite atingido',
-          'Você já atingiu o limite de 4 pedidos permitido.'
-        );
+          Alert.alert(
+            'Limite atingido',
+            'Você já atingiu o limite de 4 pedidos permitido.'
+      );
+          reset({ musica: '', cantor: '', genero: '' });
+          setSugestoes([]);                              
         return;
       }
-
       const resultados = await searchTrack(`${data.musica} ${data.cantor}`);
 
       if (resultados.length === 0) {
