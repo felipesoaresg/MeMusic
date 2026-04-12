@@ -62,7 +62,7 @@ const handleRegister = async (data: RegisterData) => {
     await registrarCantorNaApi(updatedUser);
 
     Alert.alert('Sucesso', 'Conta criada com sucesso!', [
-      { text: 'OK', onPress: () => router.push('/musican') }
+      { text: 'OK', onPress: () => router.push('/') }
     ]);
   } catch (error: any) {
     Alert.alert(
