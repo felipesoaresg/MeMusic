@@ -56,10 +56,13 @@ const MusicianQueue = () => {
   }, []);
 
   const marcarComoTocada = (id: number) => {
-    const atualizados = pedidos.map((p) =>
-      p.id === id ? { ...p, tocada: true } : p
+    setPedidos((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, tocada: true } : p))
     );
-    setPedidos(atualizados);
+
+    setTimeout(() => {
+      setPedidos((prev) => prev.filter((p) => p.id !== id));
+    }, 1500);
   };
 
   const deletarPedido = async (id: number) => {
