@@ -1,33 +1,30 @@
 import { searchTrack } from '@/api/spotifySearch';
 import HeaderBar from '@/components/HeaderBar';
 import { Feather } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Link } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const Client = () => {
+  const { clientId, clientName } = useLocalSearchParams();
+
   const [userName, setUserName] = useState('');
+  const [loadingMusica, setLoadingMusica] = useState(true);
   const [musicaAtual, setMusicaAtual] = useState<{
     name: string;
     artist: string;
     albumImage: string;
-  }>({
-    name: '',
-    artist: '',
-    albumImage: '',
-  });
+  }>({ name: '', artist: '', albumImage: '' });
 
   useEffect(() => {
-    const loadUserName = async () => {
-      try {
-        const storedName = await AsyncStorage.getItem('userName');
-        if (storedName) setUserName(storedName);
-      } catch (error) {
-        console.error('Erro ao carregar nome:', error);
-      }
-    };
+    if (clientName) {
+      setUserName(String(clientName));
+    } else {
+      setUserName('Cliente');
+    }
+  }, [clientName]);
 
+  useEffect(() => {
     const carregarMusicaAtual = async () => {
       try {
         const resultados = await searchTrack('Pink + White Frank Ocean');
@@ -41,16 +38,21 @@ const Client = () => {
         }
       } catch (error) {
         console.error('Erro ao buscar música atual:', error);
+      } finally {
+        setLoadingMusica(false);
       }
     };
 
-    loadUserName();
     carregarMusicaAtual();
   }, []);
 
   return (
     <View style={styles.container}>
-      <HeaderBar name={userName} place="GastroBar" />
+      <HeaderBar
+        name={userName}
+        place="GastroBar"
+        onLogout={() => router.replace('/')}
+      />
 
       <View style={styles.content}>
         <View style={styles.eventBox}>
@@ -60,18 +62,31 @@ const Client = () => {
         </View>
 
         <View style={styles.nowPlaying}>
-          {musicaAtual.albumImage ? (
-            <Image source={{ uri: musicaAtual.albumImage }} style={styles.albumImage} />
-          ) : null}
-          <Text style={styles.nowPlayingLabel}>Tocando agora</Text>
-          <Text style={styles.songTitle}>{musicaAtual.name}</Text>
-          <Text style={styles.artist}>{musicaAtual.artist}</Text>
+          {loadingMusica ? (
+            <ActivityIndicator size="large" color="#00FFFF" style={{ marginVertical: 20 }} />
+          ) : (
+            <>
+              {musicaAtual.albumImage ? (
+                <Image source={{ uri: musicaAtual.albumImage }} style={styles.albumImage} />
+              ) : null}
+              <Text style={styles.nowPlayingLabel}>Tocando agora</Text>
+              <Text style={styles.songTitle}>{musicaAtual.name}</Text>
+              <Text style={styles.artist}>{musicaAtual.artist}</Text>
+            </>
+          )}
         </View>
 
-        <Link href="/request" asChild>
+        <Link href={{ pathname: '/request', params: { clientId, clientName } }} asChild>
           <TouchableOpacity style={styles.requestButton}>
             <Feather name="plus-circle" size={20} color="#0d0d0d" style={{ marginRight: 8 }} />
             <Text style={styles.requestText}>Fazer pedido de música</Text>
+          </TouchableOpacity>
+        </Link>
+
+        <Link href={{ pathname: '/queue', params: { clientId, clientName } }} asChild>
+          <TouchableOpacity style={styles.queueButton}>
+            <Feather name="list" size={20} color="#0d0d0d" style={{ marginRight: 8 }} />
+            <Text style={styles.requestText}>Ver fila de pedidos</Text>
           </TouchableOpacity>
         </Link>
       </View>
@@ -87,13 +102,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#0d0d0d',
     paddingHorizontal: 20,
     paddingTop: 30,
-    justifyContent: 'space-between',
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginTop: 20,
   },
   eventBox: {
     backgroundColor: '#111',
@@ -152,7 +165,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 15,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  queueButton: {
+    flexDirection: 'row',
+    backgroundColor: '#00FFFF',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    width: '100%',
+    justifyContent: 'center',
   },
   requestText: {
     color: '#0d0d0d',
