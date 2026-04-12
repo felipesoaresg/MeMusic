@@ -133,6 +133,21 @@ export async function loginCliente(nome_cliente) {
   }
 }
 
+export async function buscarClientePorId(id_cliente) {
+  console.log('Chamando:', `${API_URL}/cliente/${id_cliente}`);
+
+  try {
+    const response = await fetch(`${API_URL}/cliente/${id_cliente}`, {
+      method: 'GET',
+    });
+
+    return await parseResponse(response);
+  } catch (error) {
+    console.log('Erro buscarClientePorId:', error);
+    throw error;
+  }
+}
+
 export async function criarPedidoCliente({
   id_cliente,
   titulo,
