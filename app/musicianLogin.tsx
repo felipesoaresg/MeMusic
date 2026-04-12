@@ -99,6 +99,8 @@ const MusicianLogin = () => {
       <TouchableOpacity onPress={() => router.push('/register')}>
         <Text style={styles.registerText}>Não tem uma conta? <Text style={styles.registerLink}>Crie conta</Text></Text>
       </TouchableOpacity>
+
+      <Text style={styles.registerText}>Para testes: admin@teste.com Senha: Admin123 </Text>
     </View>
   );
 };
