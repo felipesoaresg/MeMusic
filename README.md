@@ -36,17 +36,25 @@ M&Music é um aplicativo móvel que conecta clientes e músicos em bares, permit
 ## Estrutura do Projeto
 Aqui estão as seções principais da nossa apresentação. As imagens abaixo representam telas e fluxos da aplicação.
 
-| ![Imagem 1](./assets/images/login-.jpeg)       | ![Imagem 2](./assets/images/login.jpeg)       |
+| ![Imagem 1](./assets/images/login.jpeg)       | ![Imagem 2](./assets/images/loginclient.jpg)       |
 |-------------------------------------------|---------------------------------------------|
-| <p align="center">Tela de Login</p>       | <p align="center">Tela de Identificação</p>      |
+| <p align="center">Tela de Identificação</p>       | <p align="center">Tela de Login Cliente</p>      |
 
-| ![Imagem 3](./assets/images/homeclient.jpeg)    | ![Imagem 4](./assets/images/pedido.jpeg)   |
+| ![Imagem 3](./assets/images/musicianlogin.jpg)    | ![Imagem 4](./assets/images/musicianregister.jpg)   |
 |-------------------------------------------|---------------------------------------------|
-| <p align="center">Tela para Cliente</p> | <p align="center">Tela de Pedidos</p> |
+| <p align="center">Tela de Login Músico</p> | <p align="center">Tela de Registro Músico</p> |
 
-| ![Imagem 5](./assets/images/homemusican.jpeg)   | ![Imagem 6](./assets/images/ped-musican.jpeg)          |
+| ![Imagem 5](./assets/images/clienthome.jpg)   | ![Imagem 6](./assets/images/clientpedidos.jpg)          |
+|-------------------------------------------|---------------------------------------------|
+| <p align="center">Tela para Cliente</p>   | <p align="center">Tela de pedidos cliente</p>       |
+
+| ![Imagem 5](./assets/images/musicianhome.jpg)   | ![Imagem 6](./assets/images/pedidosmusician.jpg)          |
 |-------------------------------------------|---------------------------------------------|
 | <p align="center">Tela para Musico</p>   | <p align="center">Tela de pedidos recebidos</p>       |
+
+| ![Imagem 5](./assets/images/profile.jpg)   | ![Imagem 6](./assets/images/pedidos.jpg)          |
+|-------------------------------------------|---------------------------------------------|
+| <p align="center">Tela de Usuário Cantor</p>   | <p align="center">Tela para o cliente solicitar pedido</p>       |
 
 ## Tecnologias Utilizadas
 
