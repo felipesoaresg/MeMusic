@@ -1,25 +1,33 @@
 import { Feather } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type HeaderBarProps = {
   name: string;
   place: string;
+  onLogout?: () => void;
 };
 
-const HeaderBar = ({ place }: HeaderBarProps) => {
+const HeaderBar = ({ name, place, onLogout }: HeaderBarProps) => {
   const router = useRouter();
-  const [name, setName] = useState('');
 
-  useEffect(() => {
-    const loadName = async () => {
-      const storedName = await AsyncStorage.getItem('userName');
-      if (storedName) setName(storedName);
-    };
-    loadName();
-  }, []);
+  const handleLogout = () => {
+    Alert.alert('Sair', 'Deseja encerrar a sessão?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Sair',
+        style: 'destructive',
+        onPress: () => {
+          if (onLogout) {
+            onLogout();
+          } else {
+            router.replace('/');
+          }
+        },
+      },
+    ]);
+  };
 
   return (
     <View style={styles.header}>
@@ -29,7 +37,7 @@ const HeaderBar = ({ place }: HeaderBarProps) => {
         </View>
       </TouchableOpacity>
 
-      <View>
+      <View style={styles.info}>
         <Text style={styles.greeting}>
           Olá, <Text style={styles.name}>{name}</Text>
         </Text>
@@ -37,6 +45,10 @@ const HeaderBar = ({ place }: HeaderBarProps) => {
           Você se encontra em: <Text style={styles.place}>{place}</Text>
         </Text>
       </View>
+
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Feather name="log-out" size={18} color="#0d0d0d" />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -47,6 +59,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 60,
   },
   backButton: {
@@ -59,6 +72,9 @@ const styles = StyleSheet.create({
     height: 36,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  info: {
+    flex: 1,
   },
   greeting: {
     fontSize: 20,
@@ -77,5 +93,11 @@ const styles = StyleSheet.create({
   place: {
     color: '#00FFFF',
     fontWeight: '600',
+  },
+  logoutButton: {
+    backgroundColor: '#FFB052',
+    padding: 10,
+    borderRadius: 10,
+    marginLeft: 12,
   },
 });
