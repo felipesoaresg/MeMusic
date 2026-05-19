@@ -1,8 +1,9 @@
 import { searchTrack } from '@/api/spotifySearch';
 import HeaderMusician from '@/components/HeaderMusician';
-import { auth } from '@/firebaseConfig';
+import { app } from '@/firebaseConfig';
 import { Feather } from '@expo/vector-icons';
 import { Link } from 'expo-router';
+import { getAuth } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -13,15 +14,12 @@ const Musician = () => {
     name: string;
     artist: string;
     albumImage: string;
-  }>({
-    name: '',
-    artist: '',
-    albumImage: '',
-  });
+  }>({ name: '', artist: '', albumImage: '' });
 
   useEffect(() => {
     const carregarUsuario = async () => {
       try {
+        const auth = getAuth(app);
         const user = auth.currentUser;
 
         if (!user) {
@@ -30,8 +28,7 @@ const Musician = () => {
         }
 
         await user.reload();
-
-        const userAtualizado = auth.currentUser;
+        const userAtualizado = getAuth(app).currentUser;
 
         setUserName(
           userAtualizado?.displayName ||
@@ -46,7 +43,6 @@ const Musician = () => {
     const carregarMusicaAtual = async () => {
       try {
         const resultados = await searchTrack('Pink + White Frank Ocean');
-
         if (resultados.length > 0) {
           const musica = resultados[0];
           setMusicaAtual({
@@ -65,7 +61,6 @@ const Musician = () => {
     carregarUsuario();
     carregarMusicaAtual();
   }, []);
-
   return (
     <View style={styles.container}>
       <HeaderMusician name={userName} place="GastroBar" />
