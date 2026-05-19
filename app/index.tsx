@@ -24,6 +24,12 @@ const Identification = () => {
             <Text style={styles.buttonText}>Músico</Text>
           </TouchableOpacity>
         </Link>
+
+        <Link href="/about" asChild>
+          <TouchableOpacity style={styles.aboutLink}>
+            <Text style={styles.aboutText}>Sobre o App</Text>
+          </TouchableOpacity>
+        </Link>
     </View>
   );
 };
@@ -73,5 +79,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
+  },
+  aboutLink: {
+  position: 'absolute',
+  bottom: 20,
+  },
+  aboutText: {
+  color: '#555',
+  fontSize: 13,
   },
 });
