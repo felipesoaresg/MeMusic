@@ -2,7 +2,7 @@ import BackButton from '@/components/Backbutton';
 import Constants from 'expo-constants';
 import { Image, StyleSheet, Text, View } from 'react-native';
 
-const COMMIT_HASH = process.env.EXPO_PUBLIC_COMMIT_HASH ?? 'desconhecido';
+const COMMIT_HASH = 'bb8df56';
 
 const About = () => {
   const appVersion = Constants.manifest?.version ?? '1.0.0';
