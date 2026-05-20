@@ -1,9 +1,9 @@
 import BackButton from '@/components/Backbutton';
 import { auth } from '@/firebaseConfig';
-import { deletarPedidoMusico, listarPedidos } from '@/services/api';
+import { useCantorApi } from '@/hooks/useApi';
 import type { ListarPedidosResponse, PedidoFila } from '@/types/pedido';
 import { Feather } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -21,23 +21,21 @@ type PedidoComStatus = PedidoFila & {
 };
 
 const MusicianQueue = () => {
+  const user = auth.currentUser;
+  const { loading, getPedidos, deletarPedidoDoMusico } = useCantorApi(user);
+
   const [busca, setBusca] = useState('');
   const [pedidos, setPedidos] = useState<PedidoComStatus[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const carregarPedidos = async () => {
+      if (!user) {
+        console.log('Usuário não autenticado');
+        return;
+      }
+
       try {
-        setLoading(true);
-
-        const user = auth.currentUser;
-
-        if (!user) {
-          console.log('Usuário não autenticado');
-          return;
-        }
-
-        const response = (await listarPedidos(user)) as ListarPedidosResponse;
+        const response = (await getPedidos()) as ListarPedidosResponse;
 
         const pedidosFormatados = (response.pedidos || []).map((item: PedidoFila) => ({
           ...item,
@@ -47,8 +45,6 @@ const MusicianQueue = () => {
         setPedidos(pedidosFormatados);
       } catch (error) {
         console.error('Erro ao carregar pedidos:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -67,7 +63,7 @@ const MusicianQueue = () => {
 
   const deletarPedido = async (id: number) => {
     try {
-      await deletarPedidoMusico(id);
+      await deletarPedidoDoMusico(id);
       setPedidos((prev) => prev.filter((p) => p.id !== id));
     } catch (error: any) {
       Alert.alert('Erro', error?.message || 'Erro ao deletar');
