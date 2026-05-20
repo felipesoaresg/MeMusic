@@ -1,5 +1,4 @@
 import { Link } from 'expo-router';
-import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const Identification = () => {
@@ -14,22 +13,20 @@ const Identification = () => {
       <Text style={styles.title}>Quem é você?</Text>
 
       <Link href="/clientLogin" asChild>
-          <TouchableOpacity style={styles.buttonCliente}>
-            <Text style={styles.buttonText}>Cliente</Text>
-          </TouchableOpacity>
+        <TouchableOpacity style={styles.buttonCliente}>
+          <Text style={styles.buttonText}>Cliente</Text>
+        </TouchableOpacity>
       </Link>
 
-        <Link href="/musicianLogin" asChild>
-          <TouchableOpacity style={styles.buttonMusico}>
-            <Text style={styles.buttonText}>Músico</Text>
-          </TouchableOpacity>
-        </Link>
+      <Link href="/musicianLogin" asChild>
+        <TouchableOpacity style={styles.buttonMusico}>
+          <Text style={styles.buttonText}>Músico</Text>
+        </TouchableOpacity>
+      </Link>
 
-        <Link href="/about" asChild>
-          <TouchableOpacity style={styles.aboutLink}>
-            <Text style={styles.aboutText}>Sobre o App</Text>
-          </TouchableOpacity>
-        </Link>
+      <Link href="/about">
+        <Text style={styles.aboutLink}>Sobre o app</Text>
+      </Link>
     </View>
   );
 };
@@ -54,8 +51,8 @@ const styles = StyleSheet.create({
     color: '#8c83d6ff',
     fontWeight: 'bold',
     marginBottom: 20,
-    alignSelf: 'flex-start', 
-    paddingLeft: 45,   
+    alignSelf: 'flex-start',
+    paddingLeft: 45,
   },
   buttonCliente: {
     width: '80%',
@@ -81,11 +78,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   aboutLink: {
-  position: 'absolute',
-  bottom: 20,
-  },
-  aboutText: {
-  color: '#555',
-  fontSize: 13,
+    color: '#FFB052',
+    fontSize: 14,
+    marginTop: 30,
+    textDecorationLine: 'underline',
   },
 });
