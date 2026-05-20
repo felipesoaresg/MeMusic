@@ -1,6 +1,8 @@
+import BackButton from '@/components/Backbutton';
+import { useClienteApi } from '@/hooks/useApi';
+import type { ClienteResponse } from '@/types/cliente';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   Alert,
@@ -12,8 +14,6 @@ import {
   View
 } from 'react-native';
 import { z } from 'zod';
-import { loginCliente } from '../services/api';
-import type { ClienteResponse } from '../types/cliente';
 
 const clientSchema = z.object({
   nome: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -23,6 +23,7 @@ type ClientData = z.infer<typeof clientSchema>;
 
 const ClientLogin = () => {
   const router = useRouter();
+  const { fazerLoginCliente } = useClienteApi();
 
   const {
     control,
@@ -34,7 +35,7 @@ const ClientLogin = () => {
 
   const handleClientLogin = async (data: ClientData) => {
     try {
-      const response = await loginCliente(data.nome) as ClienteResponse;
+      const response = await fazerLoginCliente(data.nome) as ClienteResponse;
 
       const clientId = String(response.cliente.id_cliente);
       const clientName = data.nome.trim();
@@ -56,6 +57,7 @@ const ClientLogin = () => {
 
   return (
     <View style={styles.container}>
+      <BackButton variant="login"/>
       <View style={styles.logoContainer}>
         <Image
           source={require('../assets/images/logo.png')}
