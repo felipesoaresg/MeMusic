@@ -1,10 +1,6 @@
 import { searchTrack } from '@/api/spotifySearch';
 import BackButton from '@/components/Backbutton';
-import {
-  atualizarPedidoCliente,
-  deletarPedidoCliente,
-  listarPedidosCliente,
-} from '@/services/api';
+import { useClienteApi } from '@/hooks/useApi';
 import type {
   ListarPedidosClienteResponse,
   PedidoFila,
@@ -13,7 +9,7 @@ import type { TrackInfo } from '@/types/trackInfo';
 import { Feather } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useLocalSearchParams } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -29,9 +25,15 @@ import { Swipeable } from 'react-native-gesture-handler';
 const Queue = () => {
   const { clientId } = useLocalSearchParams();
 
+  const {
+    loading,
+    getPedidosCliente,
+    atualizarPedido,
+    deletarPedido: deletarPedidoApi,
+  } = useClienteApi();
+
   const [busca, setBusca] = useState('');
   const [pedidos, setPedidos] = useState<PedidoFila[]>([]);
-  const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
 
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -41,21 +43,16 @@ const Queue = () => {
   const [editSugestoes, setEditSugestoes] = useState<TrackInfo[]>([]);
 
   const carregarPedidos = async () => {
+    if (!clientId) return;
+
     try {
-      setLoading(true);
-
-      if (!clientId) return;
-
-      const response = await listarPedidosCliente(
+      const response = (await getPedidosCliente(
         Number(clientId)
-      ) as ListarPedidosClienteResponse;
+      )) as ListarPedidosClienteResponse;
 
-      const pedidosFormatados: PedidoFila[] = response.pedidos || [];
-      setPedidos(pedidosFormatados);
+      setPedidos(response.pedidos || []);
     } catch (error) {
       console.error('Erro ao carregar pedidos:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -102,7 +99,7 @@ const Queue = () => {
     try {
       setSalvando(true);
 
-      await atualizarPedidoCliente(id, {
+      await atualizarPedido(id, {
         titulo: editMusica,
         artista: editArtista,
         genero: editGenero,
@@ -120,7 +117,7 @@ const Queue = () => {
 
   const deletarPedido = async (id: number) => {
     try {
-      await deletarPedidoCliente(id);
+      await deletarPedidoApi(id);
       setPedidos((prev) => prev.filter((p) => p.id !== id));
     } catch (error: any) {
       Alert.alert('Erro', error?.message || 'Erro ao deletar');
@@ -149,9 +146,7 @@ const Queue = () => {
   );
 
   const renderItem = ({ item }: { item: PedidoFila }) => (
-    <Swipeable
-      renderRightActions={() => renderRightActions(item.id)}
-    >
+    <Swipeable renderRightActions={() => renderRightActions(item.id)}>
       <View style={styles.item}>
         {editingId === item.id ? (
           <>
@@ -244,7 +239,7 @@ const Queue = () => {
 
   return (
     <View style={styles.container}>
-      <BackButton />
+      <BackButton variant="internal"/>
       <Text style={styles.title}>Fila de pedidos</Text>
 
       <TextInput
