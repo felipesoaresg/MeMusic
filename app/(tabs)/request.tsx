@@ -1,12 +1,14 @@
 import { searchTrack } from '@/api/spotifySearch';
 import BackButton from '@/components/Backbutton';
-import { criarPedidoCliente, validarPedidoNoApex } from '@/services/api';
+import { useClienteApi } from '@/hooks/useApi';
 import type { ApexValidacaoResponse } from '@/types/apex';
 import type { CriarPedidoResponse } from '@/types/pedido';
 import { TrackInfo } from '@/types/trackInfo';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import type { NotificationResponse } from 'expo-notifications';
+import * as Notifications from 'expo-notifications';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   ActivityIndicator,
@@ -22,6 +24,25 @@ import {
 } from 'react-native';
 import { z } from 'zod';
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
+useEffect(() => {
+  const subscription = Notifications.addNotificationResponseReceivedListener(
+    (response: NotificationResponse) => {
+      router.push("/(tabs)/queue");
+    }
+  );
+  return () => subscription.remove();
+}, []);
+
 const schema = z.object({
   musica: z.string().min(1, 'Nome da música obrigatório'),
   cantor: z.string().min(1, 'Cantor obrigatório'),
@@ -33,6 +54,8 @@ type FormData = z.infer<typeof schema>;
 const Request = () => {
   const { clientId } = useLocalSearchParams<{ clientId: string }>();
   const id = Array.isArray(clientId) ? clientId[0] : clientId;
+
+  const { criarPedido, validarLimiteCliente } = useClienteApi();
 
   const [sugestoes, setSugestoes] = useState<TrackInfo[]>([]);
   const [enviando, setEnviando] = useState(false);
@@ -63,10 +86,20 @@ const Request = () => {
     try {
       const resultados = await searchTrack(texto);
       setSugestoes(resultados.slice(0, 3));
-    } catch (error) {
-      console.error('Erro ao buscar sugestões:', error);
+    } catch {
       setSugestoes([]);
     }
+  };
+
+  const enviarNotificacaoPedidoCriado = async (titulo: string, artista: string) => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Pedido criado 🎶',
+        body: `Sua música "${titulo}" de ${artista} foi adicionada à fila!`,
+        data: { titulo, artista },
+      },
+      trigger: null,
+    });
   };
 
   const enviarPedido = async (data: FormData) => {
@@ -78,19 +111,18 @@ const Request = () => {
         return;
       }
 
-      const validacao = await validarPedidoNoApex(
-        Number(id)
-      ) as ApexValidacaoResponse;
+      const validacao = await validarLimiteCliente(Number(id)) as ApexValidacaoResponse;
 
       if (validacao.status === 'LIMITE_ATINGIDO') {
-          Alert.alert(
-            'Limite atingido',
-            'Você já atingiu o limite de 4 pedidos permitido.'
-      );
-          reset({ musica: '', cantor: '', genero: '' });
-          setSugestoes([]);                              
+        Alert.alert(
+          'Limite atingido',
+          'Você já atingiu o limite de 4 pedidos permitido.'
+        );
+        reset({ musica: '', cantor: '', genero: '' });
+        setSugestoes([]);
         return;
       }
+
       const resultados = await searchTrack(`${data.musica} ${data.cantor}`);
 
       if (resultados.length === 0) {
@@ -103,22 +135,18 @@ const Request = () => {
 
       const musicaEncontrada = resultados[0];
 
-      const response = await criarPedidoCliente({
+      const response = await criarPedido({
         id_cliente: Number(id),
         titulo: musicaEncontrada.name,
         artista: musicaEncontrada.artist,
         genero: data.genero,
       }) as CriarPedidoResponse;
 
-      Alert.alert(
-        'Pedido enviado',
-        `Música: ${response.pedido.titulo}\nCantor: ${response.pedido.artista}`
-      );
+      await enviarNotificacaoPedidoCriado(response.pedido.titulo, response.pedido.artista);
 
       reset({ musica: '', cantor: '', genero: '' });
       setSugestoes([]);
     } catch (error: any) {
-      console.error('Erro ao enviar pedido:', error);
       Alert.alert('Erro', error?.message || 'Não foi possível enviar o pedido.');
     } finally {
       setEnviando(false);
@@ -127,7 +155,7 @@ const Request = () => {
 
   return (
     <View style={styles.container}>
-      <BackButton />
+      <BackButton variant="internal"/>
 
       {sugestoes.length > 0 && (
         <View style={{ marginBottom: 20 }}>
