@@ -1,160 +1,109 @@
 import BackButton from '@/components/Backbutton';
 import { auth } from '@/firebaseConfig';
-import { deletarPedidoMusico, listarPedidos } from '@/services/api';
-import type { ListarPedidosResponse, PedidoFila } from '@/types/pedido';
 import { Feather } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { Swipeable } from 'react-native-gesture-handler';
+import { router } from 'expo-router';
+import { signOut } from 'firebase/auth';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-type PedidoComStatus = PedidoFila & {
-  tocada?: boolean;
-};
-
-const MusicianQueue = () => {
-  const [busca, setBusca] = useState('');
-  const [pedidos, setPedidos] = useState<PedidoComStatus[]>([]);
+const MusicianProfile = () => {
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(true);
+  const [saindo, setSaindo] = useState(false);
 
   useEffect(() => {
-    const carregarPedidos = async () => {
+    const carregarDados = async () => {
       try {
-        setLoading(true);
-
         const user = auth.currentUser;
 
-        if (!user) {
-          console.log('Usuário não autenticado');
-          return;
+        if (user) {
+          await user.reload();
+          setNome(user.displayName || '');
+          setEmail(user.email || '');
         }
-
-        const response = (await listarPedidos(user)) as ListarPedidosResponse;
-
-        const pedidosFormatados = (response.pedidos || []).map((item: PedidoFila) => ({
-          ...item,
-          tocada: false,
-        }));
-
-        setPedidos(pedidosFormatados);
       } catch (error) {
-        console.error('Erro ao carregar pedidos:', error);
+        console.error('Erro ao carregar perfil:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    carregarPedidos();
+    carregarDados();
   }, []);
 
-  const marcarComoTocada = (id: number) => {
-    setPedidos((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, tocada: true } : p))
+  const handleLogout = () => {
+    Alert.alert('Sair', 'Deseja encerrar a sessão?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Sair',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setSaindo(true);
+            await signOut(auth);
+            router.replace('/');
+          } catch (error) {
+            console.error('Erro ao sair:', error);
+            Alert.alert('Erro', 'Não foi possível sair');
+          } finally {
+            setSaindo(false);
+          }
+        },
+      },
+    ]);
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#00FFFF" />
+      </View>
     );
-
-    setTimeout(() => {
-      setPedidos((prev) => prev.filter((p) => p.id !== id));
-    }, 1500);
-  };
-
-  const deletarPedido = async (id: number) => {
-    try {
-      await deletarPedidoMusico(id);
-      setPedidos((prev) => prev.filter((p) => p.id !== id));
-    } catch (error: any) {
-      Alert.alert('Erro', error?.message || 'Erro ao deletar');
-    }
-  };
-
-  const renderRightActions = (id: number) => (
-    <TouchableOpacity
-      style={styles.deleteAction}
-      onPress={() =>
-        Alert.alert('Excluir', 'Deseja excluir esse pedido?', [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Excluir',
-            style: 'destructive',
-            onPress: () => deletarPedido(id),
-          },
-        ])
-      }
-    >
-      <Feather name="trash" size={20} color="#fff" />
-      <Text style={styles.deleteText}>Excluir</Text>
-    </TouchableOpacity>
-  );
-
-  const pedidosFiltrados = pedidos.filter((p) =>
-    (p.musica?.toLowerCase() || '').includes(busca.toLowerCase()) ||
-    (p.artista?.toLowerCase() || '').includes(busca.toLowerCase()) ||
-    (p.genero?.toLowerCase() || '').includes(busca.toLowerCase()) ||
-    (p.cliente?.toLowerCase() || '').includes(busca.toLowerCase())
-  );
+  }
 
   return (
     <View style={styles.container}>
-      <BackButton />
-      <Text style={styles.title}>Pedidos recebidos</Text>
+      <BackButton variant="login"/>  
 
-      <TextInput
-        style={styles.search}
-        placeholder="Pesquisar"
-        placeholderTextColor="#999"
-        value={busca}
-        onChangeText={setBusca}
-      />
+      <View style={styles.content}>
+        <View style={styles.avatar}>
+          <Feather name="user" size={40} color="#0d0d0d" />
+        </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#00FFFF" style={{ marginTop: 40 }} />
-      ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {pedidosFiltrados.length > 0 ? (
-            pedidosFiltrados.map((item) => (
-              <Swipeable
-                key={item.id}
-                renderRightActions={() => renderRightActions(item.id)}
-              >
-                <View style={[styles.item, item.tocada && styles.itemTocada]}>
-                  <View style={styles.info}>
-                    <Text style={styles.musica}>{item.musica}</Text>
-                    <Text style={styles.cantor}>
-                      {item.artista} • {item.genero}
-                    </Text>
-                    <Text style={styles.cliente}>Pedido por: {item.cliente}</Text>
+        <Text style={styles.nome}>{nome || 'Usuário'}</Text>
+        <Text style={styles.email}>{email || 'Sem email'}</Text>
 
-                    {!item.tocada ? (
-                      <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => marcarComoTocada(item.id)}
-                      >
-                        <Text style={styles.buttonText}>Marcar como tocada</Text>
-                      </TouchableOpacity>
-                    ) : (
-                      <Text style={styles.tocada}>Já tocada</Text>
-                    )}
-                  </View>
-                </View>
-              </Swipeable>
-            ))
+        <View style={styles.card}>
+          <Text style={styles.label}>Local</Text>
+          <Text style={styles.value}>GastroBar</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.label}>Tipo</Text>
+          <Text style={styles.value}>Músico</Text>
+        </View>
+
+        <TouchableOpacity
+          style={[styles.logoutButton, saindo && { opacity: 0.6 }]}
+          onPress={handleLogout}
+          disabled={saindo}
+        >
+          {saindo ? (
+            <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text style={styles.empty}>Nenhum pedido encontrado</Text>
+            <>
+              <Feather name="log-out" size={18} color="#fff" />
+              <Text style={styles.logoutText}>Sair da conta</Text>
+            </>
           )}
-        </ScrollView>
-      )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
-export default MusicianQueue;
+export default MusicianProfile;
 
 const styles = StyleSheet.create({
   container: {
@@ -163,85 +112,58 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
   },
-  title: {
-    marginTop: 20,
-    color: '#fff',
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
+  content: {
+    alignItems: 'center',
   },
-  search: {
-    backgroundColor: '#111',
-    color: '#fff',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#00FFFF',
-    marginBottom: 20,
-  },
-  item: {
-    backgroundColor: '#111',
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  itemTocada: {
-    opacity: 0.5,
-  },
-  info: {
-    flex: 1,
-  },
-  musica: {
-    color: '#00FFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  cantor: {
-    color: '#ccc',
-    fontSize: 14,
-    marginTop: 4,
-    marginBottom: 4,
-  },
-  cliente: {
-    color: '#999',
-    fontSize: 13,
-    marginBottom: 8,
-  },
-  button: {
+  avatar: {
     backgroundColor: '#00FFFF',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-  },
-  buttonText: {
-    color: '#0d0d0d',
-    fontWeight: 'bold',
-  },
-  tocada: {
-    color: '#00FFFF',
-    fontWeight: 'bold',
-  },
-  empty: {
-    color: '#999',
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 40,
-  },
-  deleteAction: {
-    backgroundColor: 'red',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    width: 90,
-    borderRadius: 10,
-    marginBottom: 12,
+    marginBottom: 20,
   },
-  deleteText: {
+  nome: {
     color: '#fff',
-    marginTop: 4,
+    fontSize: 20,
     fontWeight: 'bold',
+  },
+  email: {
+    color: '#999',
+    marginBottom: 30,
+  },
+  card: {
+    backgroundColor: '#111',
+    width: '100%',
+    padding: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#00FFFF',
+    marginBottom: 10,
+  },
+  label: {
+    color: '#999',
+    fontSize: 12,
+  },
+  value: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    backgroundColor: '#c62828',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 30,
+    gap: 8,
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
