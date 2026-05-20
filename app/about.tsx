@@ -1,13 +1,15 @@
 import BackButton from '@/components/Backbutton';
-import React from 'react';
+import Constants from 'expo-constants';
 import { Image, StyleSheet, Text, View } from 'react-native';
 
-const COMMIT_HASH = 'COLE_AQUI_O_HASH_DO_COMMIT';
+const COMMIT_HASH = process.env.EXPO_PUBLIC_COMMIT_HASH ?? 'desconhecido';
 
 const About = () => {
-  return (
+  const appVersion = Constants.manifest?.version ?? '1.0.0';
+
+  return (  
     <View style={styles.container}>
-      <BackButton />
+      <BackButton variant="login"/>
 
       <View style={styles.content}>
         <Image
@@ -23,7 +25,7 @@ const About = () => {
 
         <View style={styles.card}>
           <Text style={styles.cardLabel}>Versão</Text>
-          <Text style={styles.cardValue}>1.0.0</Text>
+          <Text style={styles.cardValue}>{appVersion}</Text>
         </View>
 
         <View style={styles.card}>
