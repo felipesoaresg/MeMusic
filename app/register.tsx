@@ -1,8 +1,8 @@
+import BackButton from '@/components/Backbutton';
 import { zodResolver } from '@hookform/resolvers/zod';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   Alert,
@@ -74,6 +74,7 @@ const handleRegister = async (data: RegisterData) => {
 
   return (
     <View style={styles.container}>
+      <BackButton variant="login"/>  
       <View style={styles.logoContainer}>
         <Image
           source={require('../assets/images/logo.png')}
