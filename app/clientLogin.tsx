@@ -57,7 +57,7 @@ const ClientLogin = () => {
 
   return (
     <View style={styles.container}>
-      <BackButton variant="login"/>
+      <BackButton variant="login"/>    
       <View style={styles.logoContainer}>
         <Image
           source={require('../assets/images/logo.png')}
