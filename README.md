@@ -30,6 +30,9 @@ M&Music é um aplicativo móvel que conecta clientes e músicos em bares, permit
 ## Vídeo apresentando projeto 
 <a href='https://youtu.be/gUp-MICf4Dc?si=wSsBaVSql_bHJRgK'>M&Music Apresentação</a>
 
+## Link para testar app
+<a href='https://appdistribution.firebase.dev/i/676d00b329ad7319'>Link App</a>
+
 ## Link das APIs utilizadas
 <a href='https://developer.spotify.com/'>API do Spotify</a>
 
